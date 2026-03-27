@@ -42,7 +42,7 @@
             <div>
                 <h1 class="text-2xl font-bold">ระบบออกบิลห้องเช่า</h1>
                 <p class="text-indigo-100 text-sm">จัดการค่าน้ำ-ค่าไฟ ประวัติการชำระ และกราฟย้อนหลัง</p>
-                <p class="text-xs text-indigo-200 mt-1">V 0.2.2</p>
+                <p class="text-xs text-indigo-200 mt-1">V 0.2.2.1</p>
             </div>
             <button onclick="toggleSettings()" class="bg-indigo-500 hover:bg-indigo-400 px-4 py-2 rounded-lg transition">
                 ⚙️ ตั้งค่า
@@ -858,7 +858,7 @@
                                         <option value="โอน" ${method === 'โอน' ? 'selected' : ''}>โอน</option>
                                         <option value="อื่น ๆ" ${method === 'อื่น ๆ' ? 'selected' : ''}>อื่น ๆ</option>
                                     </select>
-                                    <input type="text" value="${escapeHtml(otherNote)}" oninput="updatePaymentField(${item.id}, 'otherNote', this.value)" placeholder="หมายเหตุเพิ่มเติมสำหรับ อื่น ๆ" class="border rounded-lg px-3 py-1.5 text-sm flex-1 min-w-[220px]">
+                                    <input type="text" value="${escapeHtml(otherNote)}" onchange="updatePaymentField(${item.id}, 'otherNote', this.value)" placeholder="หมายเหตุเพิ่มเติมสำหรับ อื่น ๆ" class="border rounded-lg px-3 py-1.5 text-sm flex-1 min-w-[220px]">
                                 </div>
                             </div>
                             <div class="flex flex-wrap gap-2">
