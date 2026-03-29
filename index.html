@@ -34,56 +34,77 @@
         .chart-bar {
             transition: all 0.25s ease;
         }
+        
+        /* Responsive Typography */
+        @media (max-width: 640px) {
+            .bill-preview {
+                padding: 20px;
+                width: 100%;
+                height: auto;
+            }
+            #billDisplay {
+                overflow-x: auto;
+            }
+            #billDisplay table {
+                font-size: 12px;
+            }
+            #billDisplay .text-2xl {
+                font-size: 1.25rem;
+            }
+            #billDisplay .text-base {
+                font-size: 0.875rem;
+            }
+        }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-2 sm:p-4 md:p-8">
     <div class="max-w-7xl mx-auto">
-        <header class="flex justify-between items-center mb-8 bg-indigo-700 p-6 rounded-xl shadow-lg text-white">
+        <header class="flex justify-between items-center mb-4 sm:mb-8 bg-indigo-700 p-3 sm:p-6 rounded-xl shadow-lg text-white">
             <div>
-                <h1 class="text-2xl font-bold">ระบบออกบิลห้องเช่า</h1>
-                <p class="text-indigo-100 text-sm">จัดการค่าน้ำ-ค่าไฟ ประวัติการชำระ และกราฟย้อนหลัง</p>
-                <p class="text-xs text-indigo-200 mt-1">V 0.2.2.1</p>
+                <h1 class="text-base sm:text-lg md:text-2xl font-bold">ระบบออกบิลห้องเช่า</h1>
+                <p class="text-indigo-100 text-xs sm:text-sm">จัดการค่าน้ำ-ค่าไฟ ประวัติการชำระ และกราฟย้อนหลัง</p>
+                <p class="text-[10px] sm:text-xs text-indigo-200 mt-1">V 0.2.3</p>
             </div>
-            <button onclick="toggleSettings()" class="bg-indigo-500 hover:bg-indigo-400 px-4 py-2 rounded-lg transition">
+            <button onclick="toggleSettings()" class="bg-indigo-500 hover:bg-indigo-400 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition text-sm sm:text-base">
                 ⚙️ ตั้งค่า
             </button>
         </header>
 
-        <div id="settingsPanel" class="hidden mb-8 bg-white p-6 rounded-xl shadow-md border border-indigo-100">
-            <h2 class="text-xl font-semibold mb-4 text-indigo-800 border-b pb-2">ตั้งค่าอัตราค่าบริการและอื่น ๆ</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div id="settingsPanel" class="hidden mb-4 sm:mb-8 bg-white p-3 sm:p-6 rounded-xl shadow-md border border-indigo-100">
+            <h2 class="text-lg sm:text-xl font-semibold mb-4 text-indigo-800 border-b pb-2">ตั้งค่าอัตราค่าบริการและอื่น ๆ</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">ชื่อห้องพัก/ชื่อหอ (ถ้ามี)</label>
-                    <input type="text" id="propertyName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2" placeholder="เช่น บ้านสุขใจ อพาร์ตเมนต์">
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700">ชื่อห้องพัก/ชื่อหอ (ถ้ามี)</label>
+                    <input type="text" id="propertyName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-1.5 sm:p-2 text-sm" placeholder="เช่น บ้านสุขใจ อพาร์ตเมนต์">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">ค่าไฟ (บาท/หน่วย)</label>
-                    <input type="number" id="elecRate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2" value="7">
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700">ค่าไฟ (บาท/หน่วย)</label>
+                    <input type="number" id="elecRate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-1.5 sm:p-2 text-sm" value="7">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">รูปแบบค่าน้ำ</label>
-                    <div class="mt-2 flex items-center gap-4">
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700">รูปแบบค่าน้ำ</label>
+                    <div class="mt-2 flex items-center gap-2 sm:gap-4">
                         <label class="inline-flex items-center">
-                            <input type="radio" name="waterType" value="unit" checked onchange="toggleWaterInput()"> <span class="ml-2 text-sm">ต่อหน่วย</span>
+                            <input type="radio" name="waterType" value="unit" checked onchange="toggleWaterInput()"> <span class="ml-2 text-xs sm:text-sm">ต่อหน่วย</span>
                         </label>
                         <label class="inline-flex items-center">
-                            <input type="radio" name="waterType" value="flat" onchange="toggleWaterInput()"> <span class="ml-2 text-sm">เหมาจ่าย</span>
+                            <input type="radio" name="waterType" value="flat" onchange="toggleWaterInput()"> <span class="ml-2 text-xs sm:text-sm">เหมาจ่าย</span>
                         </label>
                     </div>
                 </div>
                 <div id="waterRateContainer">
-                    <label id="waterLabel" class="block text-sm font-medium text-gray-700">ค่าน้ำ (บาท/หน่วย)</label>
-                    <input type="number" id="waterRate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2" value="18">
+                    <label id="waterLabel" class="block text-xs sm:text-sm font-medium text-gray-700">ค่าน้ำ (บาท/หน่วย)</label>
+                    <input type="number" id="waterRate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-1.5 sm:p-2 text-sm" value="18">
                 </div>
             </div>
-            <button onclick="saveSettings()" class="mt-6 bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-500 transition">บันทึกการตั้งค่า</button>
+            <button onclick="saveSettings()" class="mt-4 sm:mt-6 bg-green-600 text-white px-4 sm:px-6 py-1.5 sm:py-2 rounded-lg hover:bg-green-500 transition text-sm sm:text-base">บันทึกการตั้งค่า</button>
 
-            <h3 class="text-lg font-semibold mt-8 mb-3 text-indigo-800 border-b pb-2">จัดการข้อมูล (สำรอง/กู้คืน)</h3>
-            <div class="flex gap-4 flex-wrap">
-                <button onclick="exportData()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-500 transition">
+            <h3 class="text-base sm:text-lg font-semibold mt-6 sm:mt-8 mb-3 text-indigo-800 border-b pb-2">จัดการข้อมูล (สำรอง/กู้คืน)</h3>
+            <div class="flex gap-2 sm:gap-4 flex-wrap">
+                <button onclick="exportData()" class="bg-blue-600 text-white px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg hover:bg-blue-500 transition text-xs sm:text-base">
                     💾 ส่งออกข้อมูล (.json)
                 </button>
-                <button onclick="document.getElementById('importFile').click()" class="bg-yellow-600 text-white px-6 py-2 rounded-lg hover:bg-yellow-500 transition">
+                <button onclick="document.getElementById('importFile').click()" class="bg-yellow-600 text-white px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg hover:bg-yellow-500 transition text-xs sm:text-base">
                     📂 นำเข้าข้อมูล (.json)
                 </button>
                 <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)">
@@ -91,69 +112,69 @@
             <p class="text-xs text-gray-500 mt-2">คำเตือน: การนำเข้าจะลบข้อมูลที่มีอยู่ทั้งหมดก่อน แล้วจึงแทนที่ด้วยข้อมูลจากไฟล์ที่เลือก</p>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-1 space-y-6">
-                <div class="bg-white p-6 rounded-xl shadow-md">
-                    <div class="flex items-center justify-between gap-3 mb-4">
-                        <h2 class="text-lg font-semibold">เพิ่ม/เลือกห้องพัก</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
+            <div class="lg:col-span-1 space-y-4 sm:space-y-6">
+                <div class="bg-white p-3 sm:p-6 rounded-xl shadow-md">
+                    <div class="flex items-center justify-between gap-2 sm:gap-3 mb-4">
+                        <h2 class="text-base sm:text-lg font-semibold">เพิ่ม/เลือกห้องพัก</h2>
                         <div class="inline-flex rounded-lg bg-gray-100 p-1">
-                            <button id="billingModeBtn" onclick="setMode('billing')" class="mode-pill mode-pill-active px-3 py-1.5 rounded-md text-sm font-semibold">ออกบิล</button>
-                            <button id="historyModeBtn" onclick="setMode('history')" class="mode-pill px-3 py-1.5 rounded-md text-sm font-semibold text-gray-600">ประวัติ</button>
+                            <button id="billingModeBtn" onclick="setMode('billing')" class="mode-pill mode-pill-active px-2 sm:px-3 py-1 sm:py-1.5 rounded-md text-xs sm:text-sm font-semibold">ออกบิล</button>
+                            <button id="historyModeBtn" onclick="setMode('history')" class="mode-pill px-2 sm:px-3 py-1 sm:py-1.5 rounded-md text-xs sm:text-sm font-semibold text-gray-600">ประวัติ</button>
                         </div>
                     </div>
 
                     <div class="relative mb-4">
-                        <input type="text" id="searchInput" placeholder="ค้นหาเลขห้องหรือชื่อผู้เช่า..." onkeyup="loadRooms()" class="w-full border p-2 pl-10 rounded-md">
-                        <svg class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input type="text" id="searchInput" placeholder="ค้นหาเลขห้องหรือชื่อผู้เช่า..." onkeyup="loadRooms()" class="w-full border p-1.5 sm:p-2 pl-8 sm:pl-10 rounded-md text-sm">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
                     <div class="flex gap-2 mb-4">
-                        <input type="text" id="roomNameInput" placeholder="เลขห้อง (เช่น 101)" class="flex-1 border p-2 rounded-md">
-                        <button onclick="addRoom()" title="เพิ่มห้อง" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-500">+</button>
+                        <input type="text" id="roomNameInput" placeholder="เลขห้อง (เช่น 101)" class="flex-1 border p-1.5 sm:p-2 rounded-md text-sm">
+                        <button onclick="addRoom()" title="เพิ่มห้อง" class="bg-indigo-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-md hover:bg-indigo-500 font-bold text-sm sm:text-base">+</button>
                     </div>
                     <div id="roomList" class="space-y-2 max-h-[26rem] overflow-y-auto p-2"></div>
                 </div>
 
-                <div id="billingForm" class="hidden bg-white p-6 rounded-xl shadow-md border-t-4 border-indigo-600">
-                    <h2 class="text-lg font-semibold mb-4">กรอกข้อมูล: ห้อง <span id="currentRoomTitle">-</span></h2>
+                <div id="billingForm" class="hidden bg-white p-3 sm:p-6 rounded-xl shadow-md border-t-4 border-indigo-600">
+                    <h2 class="text-base sm:text-lg font-semibold mb-4">กรอกข้อมูล: ห้อง <span id="currentRoomTitle">-</span></h2>
 
-                    <div class="space-y-4">
-                        <div class="bg-yellow-50 p-3 rounded-lg text-sm text-yellow-800">
+                    <div class="space-y-3 sm:space-y-4">
+                        <div class="bg-yellow-50 p-2 sm:p-3 rounded-lg text-xs sm:text-sm text-yellow-800">
                             เลขอ้างอิงล่าสุดจากเดือนก่อนจะถูกเติมให้อัตโนมัติ
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-2 sm:gap-4">
                             <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase">เลขไฟเดือนก่อน</label>
-                                <input type="number" id="prevElec" class="w-full border p-2 rounded bg-gray-50" readonly>
+                                <label class="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase">เลขไฟเดือนก่อน</label>
+                                <input type="number" id="prevElec" class="w-full border p-1.5 sm:p-2 rounded bg-gray-50 text-sm" readonly>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase">เลขไฟเดือนนี้</label>
-                                <input type="number" id="currElec" class="w-full border p-2 rounded focus:ring-2 focus:ring-indigo-400 outline-none" placeholder="0">
-                            </div>
-                        </div>
-
-                        <div id="waterInputs" class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase">เลขน้ำเดือนก่อน</label>
-                                <input type="number" id="prevWater" class="w-full border p-2 rounded bg-gray-50" readonly>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase">เลขน้ำเดือนนี้</label>
-                                <input type="number" id="currWater" class="w-full border p-2 rounded focus:ring-2 focus:ring-indigo-400 outline-none" placeholder="0">
+                                <label class="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase">เลขไฟเดือนนี้</label>
+                                <input type="number" id="currElec" class="w-full border p-1.5 sm:p-2 rounded focus:ring-2 focus:ring-indigo-400 outline-none text-sm" placeholder="0">
                             </div>
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase">ค่าเช่าห้อง/อื่นๆ (ถ้ามี)</label>
-                            <input type="number" id="roomFee" class="w-full border p-2 rounded" value="0">
+                        <div id="waterInputs" class="grid grid-cols-2 gap-2 sm:gap-4">
+                            <div>
+                                <label class="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase">เลขน้ำเดือนก่อน</label>
+                                <input type="number" id="prevWater" class="w-full border p-1.5 sm:p-2 rounded bg-gray-50 text-sm" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase">เลขน้ำเดือนนี้</label>
+                                <input type="number" id="currWater" class="w-full border p-1.5 sm:p-2 rounded focus:ring-2 focus:ring-indigo-400 outline-none text-sm" placeholder="0">
+                            </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase">หมายเหตุ (ถ้ามี)</label>
-                            <input type="text" id="billNote" class="w-full border p-2 rounded" placeholder="เช่น กรุณาชำระภายในวันที่ 5">
+                            <label class="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase">ค่าเช่าห้อง/อื่นๆ (ถ้ามี)</label>
+                            <input type="number" id="roomFee" class="w-full border p-1.5 sm:p-2 rounded text-sm" value="0">
                         </div>
 
-                        <button onclick="calculateBill()" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700 transition">
+                        <div>
+                            <label class="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase">หมายเหตุ (ถ้ามี)</label>
+                            <input type="text" id="billNote" class="w-full border p-1.5 sm:p-2 rounded text-sm" placeholder="เช่น กรุณาชำระภายในวันที่ 5">
+                        </div>
+
+                        <button onclick="calculateBill()" class="w-full bg-indigo-600 text-white py-2.5 sm:py-3 rounded-lg font-bold hover:bg-indigo-700 transition text-sm sm:text-base">
                             คำนวณและดูตัวอย่างบิล
                         </button>
                     </div>
@@ -161,28 +182,28 @@
             </div>
 
             <div class="lg:col-span-2">
-                <div id="previewContainer" class="hidden sticky top-4">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-semibold">ตัวอย่างใบแจ้งหนี้ (A5 แนวนอน)</h2>
-                        <button onclick="exportBill()" class="bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 shadow-md flex items-center gap-2">
-                            💾 บันทึกและดาวน์โหลดรูปภาพ
+                <div id="previewContainer" class="hidden sticky top-2 sm:top-4">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
+                        <h2 class="text-base sm:text-lg font-semibold">ตัวอย่างใบแจ้งหนี้ (A5 แนวนอน)</h2>
+                        <button onclick="exportBill()" class="bg-green-600 text-white px-4 sm:px-6 py-1.5 sm:py-2 rounded-lg font-bold hover:bg-green-700 shadow-md flex items-center gap-2 text-xs sm:text-base">
+                            💾 บันทึกและดาวน์โหลด
                         </button>
                     </div>
-                    <div id="billDisplay" class="bg-white shadow-2xl rounded-lg overflow-hidden border border-gray-200 p-8 text-gray-800">
+                    <div id="billDisplay" class="bg-white shadow-2xl rounded-lg overflow-hidden border border-gray-200 p-4 sm:p-8 text-gray-800 text-sm overflow-x-auto">
                         <p class="text-center text-gray-400">กรุณากรอกข้อมูลเพื่อดูตัวอย่าง</p>
                     </div>
                 </div>
 
-                <div id="historyPanel" class="hidden space-y-6">
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                <div id="historyPanel" class="hidden space-y-4 sm:space-y-6">
+                    <div class="bg-white rounded-xl shadow-md p-3 sm:p-6">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4 mb-4">
                             <div>
-                                <h2 class="text-xl font-bold text-gray-800">ประวัติห้อง <span id="historyRoomTitle">-</span></h2>
-                                <p class="text-sm text-gray-500">ดูย้อนหลัง แก้ไข ลบ และอัปเดตสถานะการชำระ</p>
+                                <h2 class="text-base sm:text-xl font-bold text-gray-800">ประวัติห้อง <span id="historyRoomTitle">-</span></h2>
+                                <p class="text-xs sm:text-sm text-gray-500">ดูย้อนหลัง แก้ไข ลบ และอัปเดตสถานะการชำระ</p>
                             </div>
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <span class="text-sm text-gray-500">ช่วงข้อมูลกราฟ</span>
-                                <select id="chartRange" onchange="renderHistoryView()" class="border rounded-lg px-3 py-2 text-sm">
+                            <div class="flex items-center gap-2 flex-wrap text-xs sm:text-sm">
+                                <span class="text-gray-500">ช่วงข้อมูลกราฟ</span>
+                                <select id="chartRange" onchange="renderHistoryView()" class="border rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm">
                                     <option value="12" selected>12 เดือน</option>
                                     <option value="3">3 เดือน</option>
                                     <option value="6">6 เดือน</option>
@@ -192,9 +213,9 @@
                             </div>
                         </div>
 
-                        <div id="chartContainer" class="border rounded-xl p-4 bg-gray-50">
-                            <canvas id="chartCanvas" class="w-full" style="max-height: 300px;"></canvas>
-                            <div class="flex gap-4 mt-4 text-xs flex-wrap">
+                        <div id="chartContainer" class="border rounded-xl p-2 sm:p-4 bg-gray-50 overflow-x-auto">
+                            <canvas id="chartCanvas" class="w-full" style="max-height: 250px; min-height: 200px;"></canvas>
+                            <div class="flex gap-2 sm:gap-4 mt-4 text-[11px] sm:text-xs flex-wrap">
                                 <label class="inline-flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" id="showWater" checked onchange="renderHistoryView()" class="w-4 h-4">
                                     <span class="w-3 h-3 rounded bg-yellow-400"></span>
@@ -214,8 +235,8 @@
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-xl shadow-md p-6 overflow-y-auto max-h-[38rem]">
-                        <h3 class="text-lg font-semibold mb-4">รายการย้อนหลัง</h3>
+                    <div class="bg-white rounded-xl shadow-md p-3 sm:p-6 overflow-y-auto max-h-[35rem] sm:max-h-[38rem]">
+                        <h3 class="text-base sm:text-lg font-semibold mb-4">รายการย้อนหลัง</h3>
                         <div id="historyList" class="space-y-4">
                             <p class="text-gray-400">ยังไม่มีข้อมูล</p>
                         </div>
@@ -228,25 +249,25 @@
     <div id="billCapture" class="bill-preview"></div>
 
     <div id="editRoomModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="relative top-10 sm:top-20 mx-auto p-4 sm:p-5 border w-[90%] sm:w-96 max-w-sm shadow-lg rounded-md bg-white">
             <div class="mt-3 text-center">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">แก้ไขข้อมูลห้อง</h3>
-                <div class="mt-2 px-7 py-3">
+                <h3 class="text-base sm:text-lg leading-6 font-medium text-gray-900">แก้ไขข้อมูลห้อง</h3>
+                <div class="mt-2 px-4 sm:px-7 py-3">
                     <input type="hidden" id="editRoomId">
                     <div class="mb-4 text-left">
-                        <label class="block text-sm font-medium text-gray-700">เลขห้อง</label>
-                        <input type="text" id="editRoomName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2">
+                        <label class="block text-xs sm:text-sm font-medium text-gray-700">เลขห้อง</label>
+                        <input type="text" id="editRoomName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-1.5 sm:p-2 text-sm">
                     </div>
                     <div class="mb-4 text-left">
-                        <label class="block text-sm font-medium text-gray-700">ชื่อผู้เช่า (ถ้ามี)</label>
-                        <input type="text" id="editTenantName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2">
+                        <label class="block text-xs sm:text-sm font-medium text-gray-700">ชื่อผู้เช่า (ถ้ามี)</label>
+                        <input type="text" id="editTenantName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-1.5 sm:p-2 text-sm">
                     </div>
                 </div>
                 <div class="items-center px-4 py-3">
-                    <button onclick="saveRoomChanges()" class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-600">
+                    <button onclick="saveRoomChanges()" class="px-4 py-2 bg-green-500 text-white text-sm sm:text-base font-medium rounded-md w-full shadow-sm hover:bg-green-600">
                         บันทึก
                     </button>
-                    <button onclick="closeEditModal()" class="mt-3 px-4 py-2 bg-gray-300 text-gray-800 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-400">
+                    <button onclick="closeEditModal()" class="mt-3 px-4 py-2 bg-gray-300 text-gray-800 text-sm sm:text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-400">
                         ยกเลิก
                     </button>
                 </div>
@@ -830,40 +851,40 @@
                 const otherNote = item.payment?.otherNote || '';
 
                 return `
-                    <div class="border rounded-xl p-4 bg-gray-50">
-                        <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-4">
-                            <div class="space-y-2 flex-1">
+                    <div class="border rounded-xl p-3 sm:p-4 bg-gray-50">
+                        <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-3 sm:gap-4">
+                            <div class="space-y-2 flex-1 text-sm">
                                 <div class="flex flex-wrap items-center gap-2">
-                                    <span class="font-bold text-gray-800">บันทึกเมื่อ ${formatDate(item.createdAt)}</span>
-                                    <span class="text-xs px-2 py-1 rounded-full ${paid ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+                                    <span class="font-bold text-gray-800 text-sm">บันทึกเมื่อ ${formatDate(item.createdAt)}</span>
+                                    <span class="text-[10px] sm:text-xs px-2 py-1 rounded-full ${paid ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
                                         ${paid ? 'จ่ายแล้ว' : 'ยังไม่จ่าย'}
                                     </span>
                                 </div>
-                                <div class="grid md:grid-cols-2 gap-2 text-sm text-gray-700">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-1 sm:gap-2 text-xs sm:text-sm text-gray-700">
                                     <p>ค่าไฟ: ${Number(item.costElec).toLocaleString(undefined, { minimumFractionDigits: 2 })} บาท (${item.pElec} → ${item.cElec})</p>
                                     <p>ค่าน้ำ: ${Number(item.costWater).toLocaleString(undefined, { minimumFractionDigits: 2 })} บาท ${item.waterType === 'unit' ? `(${item.pWater} → ${item.cWater})` : '(เหมาจ่าย)'}</p>
                                     <p>ค่าเช่าห้อง: ${Number(item.roomFee).toLocaleString(undefined, { minimumFractionDigits: 2 })} บาท</p>
                                     <p>รวม: <span class="font-bold text-indigo-700">${Number(item.total).toLocaleString(undefined, { minimumFractionDigits: 2 })} บาท</span></p>
                                 </div>
-                                ${item.billNote ? `<p class="text-sm text-gray-500">หมายเหตุ: ${escapeHtml(item.billNote)}</p>` : ''}
+                                ${item.billNote ? `<p class="text-xs sm:text-sm text-gray-500">หมายเหตุ: ${escapeHtml(item.billNote)}</p>` : ''}
                                 <div class="flex flex-wrap items-center gap-2 pt-2">
-                                    <label class="inline-flex items-center gap-2 text-sm">
+                                    <label class="inline-flex items-center gap-2 text-xs sm:text-sm">
                                         <input type="checkbox" ${paid ? 'checked' : ''} onchange="togglePaid(${item.id}, this.checked)">
                                         <span>จ่ายแล้ว</span>
                                     </label>
-                                    <select onchange="updatePaymentField(${item.id}, 'method', this.value)" class="border rounded-lg px-3 py-1.5 text-sm">
+                                    <select onchange="updatePaymentField(${item.id}, 'method', this.value)" class="border rounded-lg px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm">
                                         <option value="">เลือกวิธีชำระ</option>
                                         <option value="เงินสด" ${method === 'เงินสด' ? 'selected' : ''}>เงินสด</option>
                                         <option value="สแกน" ${method === 'สแกน' ? 'selected' : ''}>สแกน</option>
                                         <option value="โอน" ${method === 'โอน' ? 'selected' : ''}>โอน</option>
                                         <option value="อื่น ๆ" ${method === 'อื่น ๆ' ? 'selected' : ''}>อื่น ๆ</option>
                                     </select>
-                                    <input type="text" value="${escapeHtml(otherNote)}" onchange="updatePaymentField(${item.id}, 'otherNote', this.value)" placeholder="หมายเหตุเพิ่มเติมสำหรับ อื่น ๆ" class="border rounded-lg px-3 py-1.5 text-sm flex-1 min-w-[220px]">
+                                    <input type="text" value="${escapeHtml(otherNote)}" onchange="updatePaymentField(${item.id}, 'otherNote', this.value)" placeholder="หมายเหตุ" class="border rounded-lg px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm flex-1 min-w-[150px] sm:min-w-[220px]">
                                 </div>
                             </div>
-                            <div class="flex flex-wrap gap-2">
-                                <button onclick="editHistory(${item.id})" class="px-3 py-2 rounded-lg bg-yellow-500 text-white text-sm hover:bg-yellow-600">แก้ไข</button>
-                                <button onclick="deleteHistory(${item.id})" class="px-3 py-2 rounded-lg bg-red-500 text-white text-sm hover:bg-red-600">ลบ</button>
+                            <div class="flex flex-shrink-0 gap-1 sm:gap-2">
+                                <button onclick="editHistory(${item.id})" class="px-2 sm:px-3 py-1 sm:py-2 rounded-lg bg-yellow-500 text-white text-xs sm:text-sm hover:bg-yellow-600">แก้ไข</button>
+                                <button onclick="deleteHistory(${item.id})" class="px-2 sm:px-3 py-1 sm:py-2 rounded-lg bg-red-500 text-white text-xs sm:text-sm hover:bg-red-600">ลบ</button>
                             </div>
                         </div>
                     </div>
