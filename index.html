@@ -16,7 +16,8 @@
         }
         .bill-preview {
             width: 794px;
-            height: 559px;
+            min-height: 559px;
+            height: auto;
             background: white;
             padding: 40px;
             box-sizing: border-box;
@@ -39,7 +40,8 @@
         @media (max-width: 640px) {
             .bill-preview {
                 padding: 20px;
-                width: 100%;
+                width: 794px;
+                max-width: 100%;
                 height: auto;
             }
             #billDisplay {
@@ -63,7 +65,7 @@
             <div>
                 <h1 class="text-base sm:text-lg md:text-2xl font-bold">ระบบออกบิลห้องเช่า</h1>
                 <p class="text-indigo-100 text-xs sm:text-sm">จัดการค่าน้ำ-ค่าไฟ ประวัติการชำระ และกราฟย้อนหลัง</p>
-                <p class="text-[10px] sm:text-xs text-indigo-200 mt-1">V 0.2.3</p>
+                <p class="text-[10px] sm:text-xs text-indigo-200 mt-1">V 0.2.4</p>
             </div>
             <button onclick="toggleSettings()" class="bg-indigo-500 hover:bg-indigo-400 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg transition text-sm sm:text-base">
                 ⚙️ <span class="hidden sm:inline">ตั้งค่า</span>
@@ -145,7 +147,7 @@
                         <div class="grid grid-cols-2 gap-2 sm:gap-4">
                             <div>
                                 <label class="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase">เลขไฟเดือนก่อน</label>
-                                <input type="number" id="prevElec" class="w-full border p-1.5 sm:p-2 rounded bg-gray-50 text-sm" readonly>
+                                <input type="number" id="prevElec" class="w-full border p-1.5 sm:p-2 rounded bg-gray-50 text-sm" readonly onclick="maybeEditPreviousBill('prevElec')">
                             </div>
                             <div>
                                 <label class="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase">เลขไฟเดือนนี้</label>
@@ -156,7 +158,7 @@
                         <div id="waterInputs" class="grid grid-cols-2 gap-2 sm:gap-4">
                             <div>
                                 <label class="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase">เลขน้ำเดือนก่อน</label>
-                                <input type="number" id="prevWater" class="w-full border p-1.5 sm:p-2 rounded bg-gray-50 text-sm" readonly>
+                                <input type="number" id="prevWater" class="w-full border p-1.5 sm:p-2 rounded bg-gray-50 text-sm" readonly onclick="maybeEditPreviousBill('prevWater')">
                             </div>
                             <div>
                                 <label class="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase">เลขน้ำเดือนนี้</label>
@@ -165,8 +167,16 @@
                         </div>
 
                         <div>
-                            <label class="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase">ค่าเช่าห้อง/อื่นๆ (ถ้ามี)</label>
-                            <input type="number" id="roomFee" class="w-full border p-1.5 sm:p-2 rounded text-sm" value="0">
+                            <label class="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase">ค่าเช่าห้อง (บาท)</label>
+                            <input type="number" id="roomFee" class="w-full border p-1.5 sm:p-2 rounded text-sm" value="" placeholder="0">
+                        </div>
+
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between gap-2">
+                                <label class="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase">ค่าใช้จ่ายเพิ่มเติม</label>
+                                <button type="button" onclick="addExtraCharge()" class="text-indigo-600 text-xs sm:text-sm font-semibold hover:text-indigo-800">+ เพิ่มค่าใช้จ่าย</button>
+                            </div>
+                            <div id="extraChargesContainer" class="space-y-2"></div>
                         </div>
 
                         <div>
@@ -227,9 +237,14 @@
                                     <span>ค่าไฟ</span>
                                 </label>
                                 <label class="inline-flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" id="showRent" checked onchange="renderHistoryView()" class="w-4 h-4">
+                                    <input type="checkbox" id="showRent" onchange="renderHistoryView()" class="w-4 h-4">
                                     <span class="w-3 h-3 rounded bg-purple-500"></span>
                                     <span>ค่าเช่าห้อง</span>
+                                </label>
+                                <label class="inline-flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" id="showExtra" onchange="renderHistoryView()" class="w-4 h-4">
+                                    <span class="w-3 h-3 rounded bg-teal-500"></span>
+                                    <span>รวม</span>
                                 </label>
                             </div>
                         </div>
@@ -247,6 +262,51 @@
     </div>
 
     <div id="billCapture" class="bill-preview"></div>
+
+    <div id="viewBillModal" class="fixed inset-0 hidden z-50 flex items-center justify-center bg-black/50 p-4">
+        <div class="relative w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-3xl bg-white shadow-2xl border border-slate-200">
+            <div id="viewBillModalHeader" class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-200 p-4">
+                <div>
+                    <h3 class="text-lg sm:text-xl font-semibold text-slate-900">ดูบิลย้อนหลัง</h3>
+                    <p class="text-sm text-slate-500">แสดงตัวอย่างบิลและดาวน์โหลดภาพได้</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button id="downloadBillButton" onclick="downloadViewBill()" class="bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs sm:text-sm hover:bg-emerald-500 transition inline-flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        ดาวน์โหลด PNG
+                    </button>
+                    <button onclick="closeViewBillModal()" aria-label="ปิด" class="bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-xs sm:text-sm hover:bg-slate-300 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="viewBillModalBox" class="relative">
+                <div id="viewBillModalContent" class="overflow-auto p-4 bg-slate-50 min-h-[40vh]"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="appModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+        <div class="w-full max-w-md rounded-3xl bg-white shadow-2xl overflow-hidden">
+            <div class="p-5 border-b border-gray-200">
+                <h3 id="appModalTitle" class="text-lg font-semibold text-gray-900">ยืนยันการทำรายการ</h3>
+            </div>
+            <div class="p-5 text-sm text-gray-700">
+                <p id="appModalMessage"></p>
+            </div>
+            <div class="flex justify-end gap-3 p-4 bg-gray-50">
+                <button id="appModalCancel" class="rounded-full border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ยกเลิก</button>
+                <button id="appModalConfirm" class="rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">ตกลง</button>
+            </div>
+        </div>
+    </div>
 
     <div id="editRoomModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
         <div class="relative top-10 sm:top-20 mx-auto p-4 sm:p-5 border w-[90%] sm:w-96 max-w-sm shadow-lg rounded-md bg-white">
@@ -312,6 +372,8 @@
         let currentRoomId = null;
         let currentMode = 'billing';
         let currentBillData = null;
+        let editingHistoryId = null;
+        let skipPreviousMeterPromptRoom = null;
         let config = { propertyName: '', elecRate: 7, waterRate: 18, waterType: 'unit' };
 
         function toggleSettings() {
@@ -459,6 +521,8 @@
 
         function selectRoom(id) {
             currentRoomId = id;
+            editingHistoryId = null;
+            skipPreviousMeterPromptRoom = null;
             loadRooms();
             if (currentMode === 'billing') {
                 showBillingForm(id);
@@ -481,10 +545,28 @@
                 document.getElementById('prevWater').value = room.lastWater || 0;
                 document.getElementById('currElec').value = '';
                 document.getElementById('currWater').value = '';
-                document.getElementById('roomFee').value = room.roomFee || 0;
+                // roomFee: if room has a non-zero roomFee use it, otherwise leave empty and show placeholder
+                const roomFeeEl = document.getElementById('roomFee');
+                roomFeeEl.value = '';
+                roomFeeEl.placeholder = '0';
                 document.getElementById('billNote').value = '';
+                setExtraCharges([]);
                 currentBillData = null;
                 document.getElementById('previewContainer').classList.add('hidden');
+                getLatestRoomHistory(id, latest => {
+                    const useReadonly = Boolean(latest) && !editingHistoryId;
+                    document.getElementById('prevElec').readOnly = useReadonly;
+                    document.getElementById('prevWater').readOnly = useReadonly;
+
+                    // set roomFee from room or latest history when available
+                    if (room.roomFee && Number(room.roomFee) !== 0) {
+                        roomFeeEl.value = room.roomFee;
+                    } else if (latest && latest.roomFee != null) {
+                        roomFeeEl.value = latest.roomFee || '';
+                    } else {
+                        roomFeeEl.value = '';
+                    }
+                });
             };
         }
 
@@ -504,6 +586,115 @@
                 hour: '2-digit',
                 minute: '2-digit'
             });
+        }
+
+        function calculateMeterUsage(prev, current) {
+            const maxValue = 10000;
+            if (isNaN(prev) || isNaN(current)) return 0;
+            if (current >= prev) {
+                return current - prev;
+            }
+            return (maxValue - prev) + current;
+        }
+
+        function getLatestRoomHistory(roomId, callback) {
+            const tx = db.transaction("history", "readonly");
+            const req = tx.objectStore("history").getAll();
+            req.onsuccess = () => {
+                const items = (req.result || [])
+                    .filter(item => item.roomId === roomId)
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                callback(items[0] || null);
+            };
+        }
+
+        function showAppModal(message) {
+            return new Promise(resolve => {
+                const modal = document.getElementById('appModal');
+                const messageEl = document.getElementById('appModalMessage');
+                const confirmBtn = document.getElementById('appModalConfirm');
+                const cancelBtn = document.getElementById('appModalCancel');
+
+                messageEl.textContent = message;
+                modal.classList.remove('hidden');
+
+                const cleanup = () => {
+                    confirmBtn.removeEventListener('click', onConfirm);
+                    cancelBtn.removeEventListener('click', onCancel);
+                    modal.classList.add('hidden');
+                };
+
+                const onConfirm = () => { cleanup(); resolve(true); };
+                const onCancel = () => { cleanup(); resolve(false); };
+
+                confirmBtn.addEventListener('click', onConfirm);
+                cancelBtn.addEventListener('click', onCancel);
+            });
+        }
+
+        async function maybeEditPreviousBill(fieldId) {
+            if (!currentRoomId) return;
+            const field = document.getElementById(fieldId);
+            if (editingHistoryId || skipPreviousMeterPromptRoom === currentRoomId) {
+                field.readOnly = false;
+                field.focus();
+                return;
+            }
+            getLatestRoomHistory(currentRoomId, async latest => {
+                if (!latest) {
+                    field.readOnly = false;
+                    field.focus();
+                    return;
+                }
+                const editPrevious = await showAppModal('พบบิลก่อนหน้าของห้องนี้ ต้องการแก้ไขบิลก่อนหน้าหรือไม่?\n\nตกลง = แก้ไขบิลก่อนหน้า, ยกเลิก = แก้ไขเลขปัจจุบัน');
+                if (editPrevious) {
+                    editHistory(latest.id);
+                } else {
+                    skipPreviousMeterPromptRoom = currentRoomId;
+                    field.readOnly = false;
+                    field.focus();
+                }
+            });
+        }
+
+        function addExtraCharge(data = {}) {
+            const container = document.getElementById('extraChargesContainer');
+            const name = data.name || '';
+            const amount = data.amount != null ? parseFloat(data.amount) : 0;
+            container.insertAdjacentHTML('beforeend', `
+                <div class="extra-charge-row grid grid-cols-[1fr_auto] gap-2 items-end">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase">รายละเอียด</label>
+                            <input type="text" class="extra-charge-name w-full border p-1.5 sm:p-2 rounded text-sm" placeholder="เช่น ค่าทำความสะอาด" value="${escapeHtml(name)}">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase">จำนวน (บาท)</label>
+                            <input type="number" class="extra-charge-amount w-full border p-1.5 sm:p-2 rounded text-sm" value="${amount}">
+                        </div>
+                    </div>
+                    <button type="button" onclick="removeExtraCharge(this)" class="text-red-600 text-xs sm:text-sm font-semibold hover:text-red-800">ลบ</button>
+                </div>
+            `);
+        }
+
+        function removeExtraCharge(button) {
+            button.closest('.extra-charge-row')?.remove();
+        }
+
+        function readExtraCharges() {
+            return Array.from(document.querySelectorAll('.extra-charge-row')).map(row => {
+                const name = row.querySelector('.extra-charge-name')?.value.trim() || '';
+                const amount = parseFloat(row.querySelector('.extra-charge-amount')?.value) || 0;
+                return { name, amount };
+            }).filter(charge => charge.name || charge.amount !== 0);
+        }
+
+        function setExtraCharges(charges = []) {
+            const container = document.getElementById('extraChargesContainer');
+            container.innerHTML = '';
+            if (!charges || !charges.length) return;
+            charges.forEach(charge => addExtraCharge(charge));
         }
 
         function escapeHtml(text) {
@@ -564,14 +755,27 @@
                                     <td class="text-right">${Number(data.costWater).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                                 </tr>
                                 <tr class="border-b">
-                                    <td class="py-3 font-semibold">ค่าเช่าห้อง / อื่นๆ</td>
+                                    <td class="py-3 font-semibold">ค่าเช่าห้อง</td>
                                     <td class="text-center">-</td>
                                     <td class="text-center">-</td>
                                     <td class="text-right">-</td>
                                     <td class="text-right">${Number(data.roomFee).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                                 </tr>
+                                <tr class="border-b">
+                                    <td class="py-3 font-semibold">รวม</td>
+                                    <td class="text-center">-</td>
+                                    <td class="text-center">-</td>
+                                    <td class="text-right">-</td>
+                                    <td class="text-right">${Number(data.total || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                </tr>
                             </tbody>
                         </table>
+                        ${data.extraCharges?.length ? `
+                        <div class="mt-3 text-xs text-gray-600">
+                            <div class="font-semibold mb-1">รายละเอียดค่าใช้จ่ายเพิ่มเติม</div>
+                            ${data.extraCharges.map(charge => `<div class="pl-3">• ${escapeHtml(charge.name)}: ${Number(charge.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })} บาท</div>`).join('')}
+                        </div>
+                        ` : ''}
                     </div>
 
                     <div class="mt-4 flex justify-between items-end gap-4">
@@ -601,17 +805,27 @@
                 if (!room) return;
 
                 const pElec = parseFloat(document.getElementById('prevElec').value) || 0;
-                const cElec = parseFloat(document.getElementById('currElec').value) || 0;
+                const currElecRaw = document.getElementById('currElec').value.trim();
+                const currWaterRaw = document.getElementById('currWater').value.trim();
+                const cElec = currElecRaw === '' ? null : parseFloat(currElecRaw);
                 const pWater = parseFloat(document.getElementById('prevWater').value) || 0;
-                const cWater = parseFloat(document.getElementById('currWater').value) || 0;
+                const cWater = config.waterType === 'unit'
+                    ? (currWaterRaw === '' ? null : parseFloat(currWaterRaw))
+                    : 0;
                 const roomFee = parseFloat(document.getElementById('roomFee').value) || 0;
                 const billNote = document.getElementById('billNote').value.trim();
+                const extraCharges = readExtraCharges();
+                const extraTotal = extraCharges.reduce((sum, charge) => sum + (parseFloat(charge.amount) || 0), 0);
 
-                const uElec = Math.max(0, cElec - pElec);
-                const uWater = config.waterType === 'unit' ? Math.max(0, cWater - pWater) : 0;
+                if (!Number.isFinite(cElec) || (config.waterType === 'unit' && !Number.isFinite(cWater))) {
+                    alert('กรุณาใส่เลขมิเตอร์เดือนนี้ให้ครบก่อนคำนวณ');
+                    return;
+                }
+                const uElec = calculateMeterUsage(pElec, cElec);
+                const uWater = config.waterType === 'unit' ? calculateMeterUsage(pWater, cWater) : 0;
                 const costElec = uElec * config.elecRate;
                 const costWater = config.waterType === 'unit' ? uWater * config.waterRate : config.waterRate;
-                const total = costElec + costWater + roomFee;
+                const total = costElec + costWater + roomFee + extraTotal;
                 const now = new Date();
 
                 currentBillData = {
@@ -622,7 +836,7 @@
                     elecRate: config.elecRate,
                     waterRate: config.waterRate,
                     waterType: config.waterType,
-                    costElec, costWater, roomFee, total,
+                    costElec, costWater, roomFee, extraCharges, extraTotal, total,
                     billNote,
                     createdAt: now.toISOString(),
                     billDateText: now.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -635,53 +849,103 @@
             };
         }
 
-        function exportBill() {
+        async function exportBill() {
             if (!currentBillData) {
                 alert('กรุณาคำนวณบิลก่อน');
                 return;
             }
 
-            if (currentBillData.cElec === 0 && !confirm("หน่วยไฟเป็น 0 ยืนยันที่จะบันทึกหรือไม่?")) return;
+            if (currentBillData.cElec === 0) {
+                const confirmZero = await showAppModal('หน่วยไฟเป็น 0 ยืนยันที่จะบันทึกหรือไม่?\n\nตกลง = บันทึก, ยกเลิก = ย้อนกลับ');
+                if (!confirmZero) return;
+            }
+
+            if (editingHistoryId) {
+                const replaceOld = await showAppModal('คุณกำลังแก้ไขบิลย้อนหลัง ต้องการแทนที่บิลเดิมหรือเพิ่มบิลใหม่?\n\nตกลง = แทนที่บิลเดิม, ยกเลิก = เพิ่มบิลใหม่');
+                if (replaceOld) {
+                    await new Promise((resolve, reject) => {
+                        const tx = db.transaction('history', 'readwrite');
+                        const req = tx.objectStore('history').delete(editingHistoryId);
+                        req.onsuccess = () => resolve();
+                        req.onerror = () => reject(req.error);
+                    });
+                }
+                editingHistoryId = null;
+            }
+
+            const roomData = await new Promise((resolve, reject) => {
+                const tx = db.transaction(["rooms"], "readonly");
+                const req = tx.objectStore("rooms").get(currentRoomId);
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+
+            const historyItems = await new Promise((resolve, reject) => {
+                const tx = db.transaction(["history"], "readonly");
+                const req = tx.objectStore("history").getAll();
+                req.onsuccess = () => resolve(req.result || []);
+                req.onerror = () => reject(req.error);
+            });
+
+            if (!roomData) return;
+
+            const roomHistory = historyItems.filter(item => item.roomId === currentRoomId)
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            const latest = roomHistory[0] || null;
+            let shouldDeleteLatest = false;
+
+            if (latest) {
+                const latestDate = new Date(latest.createdAt);
+                const currentDate = new Date(currentBillData.createdAt);
+                const sameMeter = latest.cElec === currentBillData.cElec && latest.cWater === currentBillData.cWater;
+                const withinHour = (currentDate - latestDate) <= 1000 * 60 * 60;
+                if (sameMeter && withinHour) {
+                    const overwrite = await showAppModal('พบบิลล่าสุดของห้องนี้ภายใน 1 ชั่วโมง โดยเลขมิเตอร์เหมือนเดิม\n\nตกลง = บันทึกทับบิลเดิม, ยกเลิก = เพิ่มบิลใหม่');
+                    if (overwrite) {
+                        shouldDeleteLatest = true;
+                    }
+                }
+            }
 
             const tx = db.transaction(["rooms", "history"], "readwrite");
             const roomStore = tx.objectStore("rooms");
             const historyStore = tx.objectStore("history");
-            const getReq = roomStore.get(currentRoomId);
 
-            getReq.onsuccess = () => {
-                const roomData = getReq.result;
-                if (!roomData) return;
+            roomData.lastElec = currentBillData.cElec;
+            roomData.lastWater = currentBillData.cWater;
+            roomData.roomFee = currentBillData.roomFee;
+            roomStore.put(roomData);
 
-                roomData.lastElec = currentBillData.cElec;
-                roomData.lastWater = currentBillData.cWater;
-                roomData.roomFee = currentBillData.roomFee;
-                roomStore.put(roomData);
+            if (shouldDeleteLatest && latest) {
+                historyStore.delete(latest.id);
+            }
 
-                historyStore.add({
-                    roomId: currentBillData.roomId,
-                    tenantName: currentBillData.tenantName,
-                    pElec: currentBillData.pElec,
-                    cElec: currentBillData.cElec,
-                    pWater: currentBillData.pWater,
-                    cWater: currentBillData.cWater,
-                    uElec: currentBillData.uElec,
-                    uWater: currentBillData.uWater,
-                    elecRate: currentBillData.elecRate,
-                    waterRate: currentBillData.waterRate,
-                    waterType: currentBillData.waterType,
-                    costElec: currentBillData.costElec,
-                    costWater: currentBillData.costWater,
-                    roomFee: currentBillData.roomFee,
-                    total: currentBillData.total,
-                    billNote: currentBillData.billNote,
-                    createdAt: currentBillData.createdAt,
-                    payment: {
-                        paid: false,
-                        method: '',
-                        otherNote: ''
-                    }
-                });
-            };
+            historyStore.add({
+                roomId: currentBillData.roomId,
+                tenantName: currentBillData.tenantName,
+                pElec: currentBillData.pElec,
+                cElec: currentBillData.cElec,
+                pWater: currentBillData.pWater,
+                cWater: currentBillData.cWater,
+                uElec: currentBillData.uElec,
+                uWater: currentBillData.uWater,
+                elecRate: currentBillData.elecRate,
+                waterRate: currentBillData.waterRate,
+                waterType: currentBillData.waterType,
+                costElec: currentBillData.costElec,
+                costWater: currentBillData.costWater,
+                roomFee: currentBillData.roomFee,
+                extraCharges: currentBillData.extraCharges || [],
+                extraTotal: currentBillData.extraTotal || 0,
+                total: currentBillData.total,
+                billNote: currentBillData.billNote,
+                createdAt: currentBillData.createdAt,
+                payment: {
+                    paid: false,
+                    method: '',
+                    otherNote: ''
+                }
+            });
 
             tx.oncomplete = () => {
                 const captureArea = document.getElementById('billCapture');
@@ -732,7 +996,8 @@
 
             const showWater = document.getElementById('showWater')?.checked ?? true;
             const showElec = document.getElementById('showElec')?.checked ?? true;
-            const showRent = document.getElementById('showRent')?.checked ?? true;
+            const showRent = document.getElementById('showRent')?.checked ?? false;
+            const showExtra = document.getElementById('showExtra')?.checked ?? false;
 
             const labels = data.map(item => 
                 new Date(item.createdAt).toLocaleDateString('th-TH', { month: 'short', year: '2-digit' })
@@ -782,6 +1047,21 @@
                     pointRadius: 5,
                     pointHoverRadius: 7,
                     pointBackgroundColor: '#A855F7'
+                });
+            }
+
+            if (showExtra) {
+                datasets.push({
+                    label: 'รวม',
+                    data: data.map(item => item.total || 0),
+                    borderColor: '#14B8A6',
+                    backgroundColor: 'rgba(20, 184, 166, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#14B8A6'
                 });
             }
 
@@ -864,6 +1144,7 @@
                                     <p>ค่าไฟ: ${Number(item.costElec).toLocaleString(undefined, { minimumFractionDigits: 2 })} บาท (${item.pElec} → ${item.cElec})</p>
                                     <p>ค่าน้ำ: ${Number(item.costWater).toLocaleString(undefined, { minimumFractionDigits: 2 })} บาท ${item.waterType === 'unit' ? `(${item.pWater} → ${item.cWater})` : '(เหมาจ่าย)'}</p>
                                     <p>ค่าเช่าห้อง: ${Number(item.roomFee).toLocaleString(undefined, { minimumFractionDigits: 2 })} บาท</p>
+                                    ${item.extraCharges?.length ? `<p>ค่าใช้จ่ายเพิ่มเติม: ${Number(item.extraTotal || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })} บาท</p>` : ''}
                                     <p>รวม: <span class="font-bold text-indigo-700">${Number(item.total).toLocaleString(undefined, { minimumFractionDigits: 2 })} บาท</span></p>
                                 </div>
                                 ${item.billNote ? `<p class="text-xs sm:text-sm text-gray-500">หมายเหตุ: ${escapeHtml(item.billNote)}</p>` : ''}
@@ -883,6 +1164,7 @@
                                 </div>
                             </div>
                             <div class="flex flex-shrink-0 gap-1 sm:gap-2">
+                                <button onclick="showHistoryBill(${item.id})" class="px-2 sm:px-3 py-1 sm:py-2 rounded-lg bg-blue-500 text-white text-xs sm:text-sm hover:bg-blue-600">ดูบิล</button>
                                 <button onclick="editHistory(${item.id})" class="px-2 sm:px-3 py-1 sm:py-2 rounded-lg bg-yellow-500 text-white text-xs sm:text-sm hover:bg-yellow-600">แก้ไข</button>
                                 <button onclick="deleteHistory(${item.id})" class="px-2 sm:px-3 py-1 sm:py-2 rounded-lg bg-red-500 text-white text-xs sm:text-sm hover:bg-red-600">ลบ</button>
                             </div>
@@ -892,9 +1174,78 @@
             }).join('');
         }
 
+        async function getHistoryItem(id) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction('history', 'readonly');
+                const req = tx.objectStore('history').get(id);
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function showHistoryBill(id) {
+            const item = await getHistoryItem(id);
+            if (!item) return;
+
+            const billHTML = buildBillHTML({
+                roomId: item.roomId,
+                tenantName: item.tenantName || '',
+                pElec: item.pElec,
+                cElec: item.cElec,
+                pWater: item.pWater,
+                cWater: item.cWater,
+                uElec: item.uElec,
+                uWater: item.uWater,
+                elecRate: item.elecRate,
+                waterRate: item.waterRate,
+                waterType: item.waterType,
+                costElec: item.costElec,
+                costWater: item.costWater,
+                roomFee: item.roomFee,
+                extraCharges: item.extraCharges || [],
+                extraTotal: item.extraTotal || 0,
+                total: item.total,
+                billNote: item.billNote || '',
+                billDateText: formatDate(item.createdAt)
+            });
+
+            document.getElementById('viewBillModalContent').innerHTML = billHTML;
+            document.getElementById('viewBillModal').classList.remove('hidden');
+            window.currentViewBillHistoryId = id;
+        }
+
+        function closeViewBillModal() {
+            document.getElementById('viewBillModal').classList.add('hidden');
+            document.getElementById('viewBillModalContent').innerHTML = '';
+            window.currentViewBillHistoryId = null;
+        }
+
+        async function downloadViewBill() {
+            const content = document.getElementById('viewBillModalContent');
+            if (!content) return;
+            const canvas = await html2canvas(content, { scale: 2, backgroundColor: '#ffffff' });
+            const link = document.createElement('a');
+            const filename = `bill-${window.currentViewBillHistoryId || 'history'}-${new Date().toISOString().slice(0, 10)}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.download = filename;
+            link.click();
+        }
+
         function togglePaid(id, checked) {
             updateHistoryPayment(id, { paid: checked });
         }
+
+        // Close view modal when clicking overlay; prevent closing when clicking inside modal box
+        (function(){
+            const overlay = document.getElementById('viewBillModal');
+            const box = document.getElementById('viewBillModalBox');
+            if (overlay) {
+                overlay.addEventListener('click', function() { closeViewBillModal(); });
+            }
+            if (box) {
+                box.addEventListener('click', function(e) { e.stopPropagation(); });
+            }
+        })();
 
         function updatePaymentField(id, field, value) {
             updateHistoryPayment(id, { [field]: value });
@@ -931,6 +1282,8 @@
 
                 setMode('billing');
                 currentRoomId = item.roomId;
+                editingHistoryId = id;
+                skipPreviousMeterPrompt = true;
                 showBillingForm(item.roomId);
 
                 setTimeout(() => {
@@ -940,17 +1293,17 @@
                     document.getElementById('currWater').value = item.cWater;
                     document.getElementById('roomFee').value = item.roomFee;
                     document.getElementById('billNote').value = item.billNote || '';
+                    setExtraCharges(item.extraCharges || []);
                     calculateBill();
-
-                    if (confirm('ต้องการลบรายการเดิมเพื่อแทนที่ด้วยข้อมูลที่แก้ไขหลังจากบันทึกใหม่หรือไม่?')) {
-                        deleteHistory(id, false);
-                    }
                 }, 50);
             };
         }
 
-        function deleteHistory(id, askConfirm = true) {
-            if (askConfirm && !confirm('ยืนยันการลบประวัติบิลนี้?')) return;
+        async function deleteHistory(id, askConfirm = true) {
+            if (askConfirm) {
+                const confirmDelete = await showAppModal('ยืนยันการลบประวัติบิลนี้?\n\nตกลง = ลบ, ยกเลิก = ย้อนกลับ');
+                if (!confirmDelete) return;
+            }
 
             const tx = db.transaction("history", "readwrite");
             tx.objectStore("history").delete(id);
@@ -1048,8 +1401,9 @@
             };
         }
 
-        function deleteRoom(id) {
-            if (!confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบห้อง ${id}? รวมถึงประวัติทั้งหมดของห้องนี้`)) return;
+        async function deleteRoom(id) {
+            const confirmDelete = await showAppModal(`คุณแน่ใจหรือไม่ว่าต้องการลบห้อง ${id}? รวมถึงประวัติทั้งหมดของห้องนี้\n\nตกลง = ลบ, ยกเลิก = ย้อนกลับ`);
+            if (!confirmDelete) return;
 
             const tx = db.transaction(["rooms", "history"], "readwrite");
             const roomStore = tx.objectStore("rooms");
@@ -1076,7 +1430,8 @@
 
         async function exportData() {
             if (!db) return;
-            if (!confirm('คุณต้องการส่งออกข้อมูลทั้งหมด (ห้อง, ประวัติ, การตั้งค่า) หรือไม่?')) return;
+            const confirmExport = await showAppModal('คุณต้องการส่งออกข้อมูลทั้งหมด (ห้อง, ประวัติ, การตั้งค่า) หรือไม่?\n\nตกลง = ส่งออก, ยกเลิก = ย้อนกลับ');
+            if (!confirmExport) return;
 
             const tx = db.transaction(["rooms", "settings", "history"], "readonly");
             const roomsStore = tx.objectStore("rooms");
@@ -1112,11 +1467,12 @@
             showToast('ส่งออกข้อมูลสำเร็จ');
         }
 
-        function importData(event) {
+        async function importData(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            if (!confirm('คำเตือน: การนำเข้าข้อมูลจะลบข้อมูลที่มีอยู่ทั้งหมด! คุณต้องการดำเนินการต่อหรือไม่?')) {
+            const confirmImport = await showAppModal('คำเตือน: การนำเข้าข้อมูลจะลบข้อมูลที่มีอยู่ทั้งหมด! คุณต้องการดำเนินการต่อหรือไม่?\n\nตกลง = นำเข้า, ยกเลิก = ย้อนกลับ');
+            if (!confirmImport) {
                 event.target.value = ''; // Reset file input
                 return;
             }
