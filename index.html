@@ -44,6 +44,16 @@
         .chart-canvas-fixed {
             min-width: 700px;
         }
+
+        .bill-preview,
+        #viewBillModalContent,
+        .bill-preview * {
+            font-family: 'Sarabun', 'Noto Sans Thai', 'Leelawadee UI', 'TH Sarabun New', 'Tahoma', sans-serif;
+            letter-spacing: normal;
+            word-break: normal;
+            overflow-wrap: normal;
+            hyphens: none;
+        }
         
         /* Responsive Typography */
         @media (max-width: 640px) {
@@ -959,8 +969,11 @@
                 }
             });
 
-            tx.oncomplete = () => {
+            tx.oncomplete = async () => {
                 const captureArea = document.getElementById('billCapture');
+                if (document.fonts && document.fonts.ready) {
+                    await document.fonts.ready;
+                }
                 html2canvas(captureArea, {
                     scale: 2,
                     useCORS: true,
@@ -1240,6 +1253,10 @@
             content.style.width = '794px';
             content.style.maxWidth = 'none';
             content.style.boxSizing = 'border-box';
+
+            if (document.fonts && document.fonts.ready) {
+                await document.fonts.ready;
+            }
 
             const canvas = await html2canvas(content, { scale: 2, backgroundColor: '#ffffff' });
             const link = document.createElement('a');
