@@ -24,6 +24,13 @@
             position: absolute;
             left: -9999px;
             top: 0;
+            font-family: 'Sarabun', 'Noto Sans Thai', 'Leelawadee UI', 'TH Sarabun New', 'Tahoma', sans-serif;
+            letter-spacing: normal;
+            white-space: normal !important;
+            word-break: break-word !important;
+            overflow-wrap: anywhere !important;
+            hyphens: none !important;
+            line-height: 1.2;
         }
         .mode-pill-active {
             background: #4338ca;
@@ -738,7 +745,7 @@
                     <div class="flex justify-between items-start border-b-2 border-gray-800 pb-4 mb-4">
                         <div>
                             ${propertyNameHTML}
-                            <h1 class="text-3xl font-black text-gray-900">ใบแจ้งหนี้ / INVOICE</h1>
+                            <h1 class="text-3xl font-black text-gray-900 whitespace-nowrap">ใบแจ้งหนี้ / INVOICE</h1>
                             <p class="text-sm">วันที่: ${data.billDateText}</p>
                             ${tenantHTML}
                         </div>
@@ -971,8 +978,9 @@
 
             tx.oncomplete = async () => {
                 const captureArea = document.getElementById('billCapture');
-                if (document.fonts && document.fonts.ready) {
-                    await document.fonts.ready;
+                if (document.fonts) {
+                    const fontsToLoad = ['300 16px Sarabun', '400 16px Sarabun', '600 16px Sarabun', '700 16px Sarabun'];
+                    await Promise.all([document.fonts.ready, ...fontsToLoad.map(f => document.fonts.load(f))]);
                 }
                 html2canvas(captureArea, {
                     scale: 2,
@@ -1254,8 +1262,9 @@
             content.style.maxWidth = 'none';
             content.style.boxSizing = 'border-box';
 
-            if (document.fonts && document.fonts.ready) {
-                await document.fonts.ready;
+            if (document.fonts) {
+                const fontsToLoad = ['300 16px Sarabun', '400 16px Sarabun', '600 16px Sarabun', '700 16px Sarabun'];
+                await Promise.all([document.fonts.ready, ...fontsToLoad.map(f => document.fonts.load(f))]);
             }
 
             const canvas = await html2canvas(content, { scale: 2, backgroundColor: '#ffffff' });
