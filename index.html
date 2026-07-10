@@ -35,13 +35,23 @@
         .chart-bar {
             transition: all 0.25s ease;
         }
+
+        .bill-print-wrapper {
+            width: 794px;
+            min-width: 794px;
+        }
+
+        .chart-canvas-fixed {
+            min-width: 700px;
+        }
         
         /* Responsive Typography */
         @media (max-width: 640px) {
             .bill-preview {
                 padding: 20px;
                 width: 794px;
-                max-width: 100%;
+                max-width: none;
+                min-width: 794px;
                 height: auto;
             }
             #billDisplay {
@@ -224,7 +234,9 @@
                         </div>
 
                         <div id="chartContainer" class="border rounded-xl p-2 sm:p-4 bg-gray-50 overflow-x-auto">
-                            <canvas id="chartCanvas" class="w-full" style="max-height: 250px; min-height: 200px;"></canvas>
+                            <div class="chart-canvas-fixed">
+                                <canvas id="chartCanvas" class="w-full" style="max-height: 250px; min-height: 200px;"></canvas>
+                            </div>
                             <div class="flex gap-2 sm:gap-4 mt-4 text-[11px] sm:text-xs flex-wrap">
                                 <label class="inline-flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" id="showWater" checked onchange="renderHistoryView()" class="w-4 h-4">
@@ -660,7 +672,7 @@
         function addExtraCharge(data = {}) {
             const container = document.getElementById('extraChargesContainer');
             const name = data.name || '';
-            const amount = data.amount != null ? parseFloat(data.amount) : 0;
+            const amount = data.amount != null ? parseFloat(data.amount) : '';
             container.insertAdjacentHTML('beforeend', `
                 <div class="extra-charge-row grid grid-cols-[1fr_auto] gap-2 items-end">
                     <div class="grid grid-cols-2 gap-2">
@@ -670,7 +682,7 @@
                         </div>
                         <div>
                             <label class="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase">จำนวน (บาท)</label>
-                            <input type="number" class="extra-charge-amount w-full border p-1.5 sm:p-2 rounded text-sm" value="${amount}">
+                            <input type="number" class="extra-charge-amount w-full border p-1.5 sm:p-2 rounded text-sm" placeholder="0" value="${amount}">
                         </div>
                     </div>
                     <button type="button" onclick="removeExtraCharge(this)" class="text-red-600 text-xs sm:text-sm font-semibold hover:text-red-800">ลบ</button>
@@ -1223,12 +1235,22 @@
         async function downloadViewBill() {
             const content = document.getElementById('viewBillModalContent');
             if (!content) return;
+
+            // Ensure full content is rendered at its natural width before capture
+            content.style.width = '794px';
+            content.style.maxWidth = 'none';
+            content.style.boxSizing = 'border-box';
+
             const canvas = await html2canvas(content, { scale: 2, backgroundColor: '#ffffff' });
             const link = document.createElement('a');
             const filename = `bill-${window.currentViewBillHistoryId || 'history'}-${new Date().toISOString().slice(0, 10)}.png`;
             link.href = canvas.toDataURL('image/png');
             link.download = filename;
             link.click();
+
+            content.style.width = '';
+            content.style.maxWidth = '';
+            content.style.boxSizing = '';
         }
 
         function togglePaid(id, checked) {
