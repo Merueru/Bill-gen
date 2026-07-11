@@ -735,23 +735,23 @@
 
         function buildBillHTML(data) {
             const cleanedPropertyName = normalizeText(config.propertyName || '');
-            const propertyNameHTML = cleanedPropertyName ? `<p class="text-base font-semibold text-gray-700 mb-1 whitespace-nowrap overflow-hidden text-ellipsis">${escapeHtml(cleanedPropertyName)}</p>` : '';
-            const tenantHTML = data.tenantName ? `<p class="text-xs text-gray-500 mt-1">ผู้เช่า: ${escapeHtml(data.tenantName)}</p>` : '';
-            const noteHTML = data.billNote ? `<p class="text-[11px] text-gray-500 mt-3">หมายเหตุ : ${escapeHtml(data.billNote)}</p>` : '';
+            const propertyNameHTML = cleanedPropertyName ? `<p class="text-base font-semibold text-gray-700 mb-1 leading-tight">${escapeHtml(cleanedPropertyName)}</p>` : '';
+            const tenantHTML = data.tenantName ? `<p class="text-xs text-gray-500 mt-1 leading-tight">ผู้เช่า: ${escapeHtml(data.tenantName)}</p>` : '';
+            const noteHTML = data.billNote ? `<p class="text-[11px] text-gray-500 mt-3 leading-snug">หมายเหตุ : ${escapeHtml(data.billNote)}</p>` : '';
 
             return `
                 <div class="flex flex-col h-full border-4 border-double border-gray-300 p-2">
-                    <div class="flex justify-between items-start border-b-2 border-gray-800 pb-4 mb-4 gap-4">
-                        <div class="min-w-0 flex-1">
+                    <div class="flex justify-between items-stretch border-b-2 border-gray-800 pb-4 mb-6 gap-4">
+                        <div class="flex-1 min-w-0">
                             ${propertyNameHTML}
-                            <h1 class="text-3xl font-black text-gray-900 whitespace-nowrap">ใบแจ้งหนี้ / INVOICE</h1>
-                            <p class="text-sm">วันที่: ${data.billDateText}</p>
+                            <h1 class="text-3xl font-black text-gray-900 leading-tight">ใบแจ้งหนี้ / INVOICE</h1>
+                            <p class="text-sm leading-tight">วันที่: ${data.billDateText}</p>
                             ${tenantHTML}
                         </div>
-                        <div class="shrink-0 text-right">
+                        <div class="shrink-0 flex flex-col justify-start">
                             <div class="bg-gray-900 text-white px-4 py-2 rounded">
-                                <span class="text-sm uppercase block">เลขที่ห้อง</span>
-                                <span class="text-2xl font-bold">${escapeHtml(data.roomId)}</span>
+                                <span class="text-sm uppercase block leading-tight">เลขที่ห้อง</span>
+                                <span class="text-2xl font-bold leading-tight">${escapeHtml(data.roomId)}</span>
                             </div>
                         </div>
                     </div>
@@ -1254,26 +1254,34 @@
             const content = document.getElementById('viewBillModalContent');
             if (!content) return;
 
-            // Ensure full content is rendered at its natural width before capture
-            content.style.width = '794px';
-            content.style.maxWidth = 'none';
-            content.style.boxSizing = 'border-box';
+            // Clone for accurate capture
+            const billClone = content.cloneNode(true);
+            billClone.style.width = '794px';
+            billClone.style.maxWidth = 'none';
+            billClone.style.boxSizing = 'border-box';
+            billClone.style.position = 'absolute';
+            billClone.style.left = '-9999px';
+            billClone.style.top = '0';
+            billClone.style.background = 'white';
+            billClone.style.padding = '0';
+            document.body.appendChild(billClone);
 
-            const canvas = await html2canvas(content, {
+            const canvas = await html2canvas(billClone, {
                 scale: 2,
                 backgroundColor: '#ffffff',
                 windowWidth: 794,
-                windowHeight: Math.max(content?.scrollHeight || 0, 900)
+                windowHeight: Math.max(billClone?.scrollHeight || 0, 900),
+                useCORS: true,
+                allowTaint: true
             });
+            
+            document.body.removeChild(billClone);
+
             const link = document.createElement('a');
             const filename = `bill-${window.currentViewBillHistoryId || 'history'}-${new Date().toISOString().slice(0, 10)}.png`;
             link.href = canvas.toDataURL('image/png');
             link.download = filename;
             link.click();
-
-            content.style.width = '';
-            content.style.maxWidth = '';
-            content.style.boxSizing = '';
         }
 
         function togglePaid(id, checked) {
