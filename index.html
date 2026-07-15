@@ -632,7 +632,7 @@
             };
         }
 
-        function showAppModal(message, confirmText = 'ตกลง', cancelText = 'ยกเลิก') {
+        function showAppModal(message) {
             return new Promise(resolve => {
                 const modal = document.getElementById('appModal');
                 const messageEl = document.getElementById('appModalMessage');
@@ -640,8 +640,6 @@
                 const cancelBtn = document.getElementById('appModalCancel');
 
                 messageEl.textContent = message;
-                confirmBtn.textContent = confirmText;
-                cancelBtn.textContent = cancelText;
                 modal.classList.remove('hidden');
 
                 const cleanup = () => {
@@ -766,7 +764,7 @@
                             ${tenantHTML}
                         </div>
                         <div class="shrink-0 flex flex-col justify-center">
-                            <div class="bg-gray-900 text-white px-5 py-3 rounded text-center flex flex-col items-center justify-center min-h-[110px]">
+                            <div class="bg-gray-900 text-white px-4 py-2 rounded text-center flex flex-col items-center justify-center min-h-[88px]">
                                 <span class="text-sm uppercase block leading-tight">เลขที่ห้อง</span>
                                 <span class="text-2xl font-bold leading-tight">${escapeHtml(data.roomId)}</span>
                             </div>
@@ -907,7 +905,7 @@
 
             let shouldReplaceHistory = false;
             if (editingHistoryId) {
-                const replaceOld = await showAppModal('คุณกำลังแก้ไขบิลย้อนหลัง ต้องการแทนที่บิลเดิมหรือเพิ่มบิลใหม่?\n\nแทนที่บิลเดิม = บันทึก, ไม่บันทึก = ย้อนกลับ', 'แทนที่บิลเดิม', 'ไม่บันทึก');
+                const replaceOld = await showAppModal('คุณกำลังแก้ไขบิลย้อนหลัง ต้องการแทนที่บิลเดิมหรือเพิ่มบิลใหม่?\n\nตกลง = แทนที่บิลเดิม, ยกเลิก = เพิ่มบิลใหม่');
                 shouldReplaceHistory = replaceOld;
                 if (replaceOld) {
                     await new Promise((resolve, reject) => {
