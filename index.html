@@ -185,6 +185,7 @@
                         <div>
                             <label class="block text-[10px] sm:text-xs font-bold text-gray-500 uppercase">ค่าเช่าห้อง (บาท)</label>
                             <input type="number" id="roomFee" class="w-full border p-1.5 sm:p-2 rounded text-sm" value="" placeholder="0">
+                            <p class="mt-1 text-[10px] text-gray-500">สามารถใส่เลขติดลบได้ เช่น -500 สำหรับคืนเงินหรือส่วนลด</p>
                         </div>
 
                         <div class="space-y-2">
@@ -391,7 +392,6 @@
         let currentMode = 'billing';
         let currentBillData = null;
         let editingHistoryId = null;
-        let skipPreviousMeterPromptRoom = null;
         let config = { propertyName: '', elecRate: 7, waterRate: 18, waterType: 'unit' };
 
         function normalizeText(text) {
@@ -545,7 +545,6 @@
         function selectRoom(id) {
             currentRoomId = id;
             editingHistoryId = null;
-            skipPreviousMeterPromptRoom = null;
             loadRooms();
             if (currentMode === 'billing') {
                 showBillingForm(id);
@@ -606,12 +605,10 @@
         }
 
         function formatDate(dateStr) {
-            return new Date(dateStr).toLocaleString('th-TH', {
+            return new Date(dateStr).toLocaleDateString('th-TH', {
                 day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
+                month: 'long',
+                year: 'numeric'
             });
         }
 
@@ -635,7 +632,7 @@
             };
         }
 
-        function showAppModal(message) {
+        function showAppModal(message, confirmText = 'ตกลง', cancelText = 'ยกเลิก') {
             return new Promise(resolve => {
                 const modal = document.getElementById('appModal');
                 const messageEl = document.getElementById('appModalMessage');
@@ -643,6 +640,8 @@
                 const cancelBtn = document.getElementById('appModalCancel');
 
                 messageEl.textContent = message;
+                confirmBtn.textContent = confirmText;
+                cancelBtn.textContent = cancelText;
                 modal.classList.remove('hidden');
 
                 const cleanup = () => {
@@ -662,7 +661,7 @@
         async function maybeEditPreviousBill(fieldId) {
             if (!currentRoomId) return;
             const field = document.getElementById(fieldId);
-            if (editingHistoryId || skipPreviousMeterPromptRoom === currentRoomId) {
+            if (editingHistoryId) {
                 field.readOnly = false;
                 field.focus();
                 return;
@@ -673,11 +672,18 @@
                     field.focus();
                     return;
                 }
+
+                const latestHasZeroPrevious = (Number(latest.pElec) || 0) === 0 && (Number(latest.pWater) || 0) === 0;
+                if (latestHasZeroPrevious) {
+                    field.readOnly = false;
+                    field.focus();
+                    return;
+                }
+
                 const editPrevious = await showAppModal('พบบิลก่อนหน้าของห้องนี้ ต้องการแก้ไขบิลก่อนหน้าหรือไม่?\n\nตกลง = แก้ไขบิลก่อนหน้า, ยกเลิก = แก้ไขเลขปัจจุบัน');
                 if (editPrevious) {
                     editHistory(latest.id);
                 } else {
-                    skipPreviousMeterPromptRoom = currentRoomId;
                     field.readOnly = false;
                     field.focus();
                 }
@@ -709,10 +715,15 @@
             button.closest('.extra-charge-row')?.remove();
         }
 
+        function parseNumericInput(value) {
+            const parsed = Number.parseFloat(value);
+            return Number.isFinite(parsed) ? parsed : 0;
+        }
+
         function readExtraCharges() {
             return Array.from(document.querySelectorAll('.extra-charge-row')).map(row => {
                 const name = row.querySelector('.extra-charge-name')?.value.trim() || '';
-                const amount = parseFloat(row.querySelector('.extra-charge-amount')?.value) || 0;
+                const amount = parseNumericInput(row.querySelector('.extra-charge-amount')?.value);
                 return { name, amount };
             }).filter(charge => charge.name || charge.amount !== 0);
         }
@@ -733,6 +744,12 @@
                 .replace(/'/g, '&#039;');
         }
 
+        function formatMoney(value) {
+            const number = Number(value) || 0;
+            const text = number.toLocaleString(undefined, { minimumFractionDigits: 2 });
+            return number < 0 ? `<span class="font-black text-emerald-600">${text}</span>` : text;
+        }
+
         function buildBillHTML(data) {
             const cleanedPropertyName = normalizeText(config.propertyName || '');
             const propertyNameHTML = cleanedPropertyName ? `<p class="text-base font-semibold text-gray-700 mb-1 leading-tight">${escapeHtml(cleanedPropertyName)}</p>` : '';
@@ -748,8 +765,8 @@
                             <p class="text-sm leading-tight">วันที่: ${data.billDateText}</p>
                             ${tenantHTML}
                         </div>
-                        <div class="shrink-0 flex flex-col justify-start">
-                            <div class="bg-gray-900 text-white px-4 py-2 rounded">
+                        <div class="shrink-0 flex flex-col justify-center">
+                            <div class="bg-gray-900 text-white px-5 py-3 rounded text-center flex flex-col items-center justify-center min-h-[110px]">
                                 <span class="text-sm uppercase block leading-tight">เลขที่ห้อง</span>
                                 <span class="text-2xl font-bold leading-tight">${escapeHtml(data.roomId)}</span>
                             </div>
@@ -773,35 +790,35 @@
                                     <td class="text-center text-sm text-gray-500">${data.pElec} - ${data.cElec}</td>
                                     <td class="text-center">${data.uElec}</td>
                                     <td class="text-right">${Number(data.elecRate).toFixed(2)}</td>
-                                    <td class="text-right">${Number(data.costElec).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                    <td class="text-right">${formatMoney(data.costElec)}</td>
                                 </tr>
                                 <tr class="border-b">
                                     <td class="py-3 font-semibold">ค่าน้ำ (${data.waterType === 'unit' ? 'ตามจริง' : 'เหมาจ่าย'})</td>
                                     <td class="text-center text-sm text-gray-500">${data.waterType === 'unit' ? `${data.pWater} - ${data.cWater}` : '-'}</td>
                                     <td class="text-center">${data.waterType === 'unit' ? data.uWater : '1'}</td>
                                     <td class="text-right">${data.waterType === 'unit' ? Number(data.waterRate).toFixed(2) : '-'}</td>
-                                    <td class="text-right">${Number(data.costWater).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                    <td class="text-right">${formatMoney(data.costWater)}</td>
                                 </tr>
                                 <tr class="border-b">
                                     <td class="py-3 font-semibold">ค่าเช่าห้อง</td>
                                     <td class="text-center">-</td>
                                     <td class="text-center">-</td>
                                     <td class="text-right">-</td>
-                                    <td class="text-right">${Number(data.roomFee).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                    <td class="text-right">${formatMoney(data.roomFee)}</td>
                                 </tr>
                                 <tr class="border-b">
                                     <td class="py-3 font-semibold">รวม</td>
                                     <td class="text-center">-</td>
                                     <td class="text-center">-</td>
                                     <td class="text-right">-</td>
-                                    <td class="text-right">${Number(data.total || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                    <td class="text-right">${formatMoney(data.total || 0)}</td>
                                 </tr>
                             </tbody>
                         </table>
                         ${data.extraCharges?.length ? `
                         <div class="mt-3 text-xs text-gray-600">
                             <div class="font-semibold mb-1">รายละเอียดค่าใช้จ่ายเพิ่มเติม</div>
-                            ${data.extraCharges.map(charge => `<div class="pl-3">• ${escapeHtml(charge.name)}: ${Number(charge.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })} บาท</div>`).join('')}
+                            ${data.extraCharges.map(charge => `<div class="pl-3">• ${escapeHtml(charge.name)}: ${formatMoney(charge.amount)} บาท</div>`).join('')}
                         </div>
                         ` : ''}
                     </div>
@@ -813,7 +830,7 @@
                         <div class="w-64">
                             <div class="flex justify-between py-2 border-b">
                                 <span>รวมทั้งสิ้น</span>
-                                <span class="text-2xl font-bold text-indigo-700">${Number(data.total).toLocaleString(undefined, { minimumFractionDigits: 2 })} บาท</span>
+                                <span class="text-2xl font-bold ${Number(data.total) < 0 ? 'text-emerald-600' : 'text-indigo-700'}">${formatMoney(data.total)} บาท</span>
                             </div>
                             <p class="text-[10px] text-gray-400 mt-2 text-right italic">ขอบคุณที่ใช้บริการ</p>
                         </div>
@@ -840,10 +857,10 @@
                 const cWater = config.waterType === 'unit'
                     ? (currWaterRaw === '' ? null : parseFloat(currWaterRaw))
                     : 0;
-                const roomFee = parseFloat(document.getElementById('roomFee').value) || 0;
+                const roomFee = parseNumericInput(document.getElementById('roomFee').value);
                 const billNote = document.getElementById('billNote').value.trim();
                 const extraCharges = readExtraCharges();
-                const extraTotal = extraCharges.reduce((sum, charge) => sum + (parseFloat(charge.amount) || 0), 0);
+                const extraTotal = extraCharges.reduce((sum, charge) => sum + parseNumericInput(charge.amount), 0);
 
                 if (!Number.isFinite(cElec) || (config.waterType === 'unit' && !Number.isFinite(cWater))) {
                     alert('กรุณาใส่เลขมิเตอร์เดือนนี้ให้ครบก่อนคำนวณ');
@@ -888,8 +905,10 @@
                 if (!confirmZero) return;
             }
 
+            let shouldReplaceHistory = false;
             if (editingHistoryId) {
-                const replaceOld = await showAppModal('คุณกำลังแก้ไขบิลย้อนหลัง ต้องการแทนที่บิลเดิมหรือเพิ่มบิลใหม่?\n\nตกลง = แทนที่บิลเดิม, ยกเลิก = เพิ่มบิลใหม่');
+                const replaceOld = await showAppModal('คุณกำลังแก้ไขบิลย้อนหลัง ต้องการแทนที่บิลเดิมหรือเพิ่มบิลใหม่?\n\nแทนที่บิลเดิม = บันทึก, ไม่บันทึก = ย้อนกลับ', 'แทนที่บิลเดิม', 'ไม่บันทึก');
+                shouldReplaceHistory = replaceOld;
                 if (replaceOld) {
                     await new Promise((resolve, reject) => {
                         const tx = db.transaction('history', 'readwrite');
@@ -922,12 +941,12 @@
             const latest = roomHistory[0] || null;
             let shouldDeleteLatest = false;
 
-            if (latest) {
+            if (!editingHistoryId && latest) {
                 const latestDate = new Date(latest.createdAt);
                 const currentDate = new Date(currentBillData.createdAt);
                 const sameMeter = latest.cElec === currentBillData.cElec && latest.cWater === currentBillData.cWater;
                 const withinHour = (currentDate - latestDate) <= 1000 * 60 * 60;
-                if (sameMeter && withinHour) {
+                if (sameMeter && withinHour && !shouldReplaceHistory) {
                     const overwrite = await showAppModal('พบบิลล่าสุดของห้องนี้ภายใน 1 ชั่วโมง โดยเลขมิเตอร์เหมือนเดิม\n\nตกลง = บันทึกทับบิลเดิม, ยกเลิก = เพิ่มบิลใหม่');
                     if (overwrite) {
                         shouldDeleteLatest = true;
@@ -1336,7 +1355,6 @@
                 setMode('billing');
                 currentRoomId = item.roomId;
                 editingHistoryId = id;
-                skipPreviousMeterPromptRoom = item.roomId;
                 showBillingForm(item.roomId, () => {
                     document.getElementById('prevElec').value = item.pElec;
                     document.getElementById('currElec').value = item.cElec;
@@ -1356,9 +1374,48 @@
                 if (!confirmDelete) return;
             }
 
-            const tx = db.transaction("history", "readwrite");
-            tx.objectStore("history").delete(id);
-            tx.oncomplete = () => {
+            const historyTx = db.transaction(["rooms", "history"], "readwrite");
+            const historyStore = historyTx.objectStore("history");
+            const roomStore = historyTx.objectStore("rooms");
+
+            const historyReq = historyStore.get(id);
+            historyReq.onsuccess = async () => {
+                const deletedItem = historyReq.result;
+                if (!deletedItem) return;
+
+                const roomId = deletedItem.roomId;
+                historyStore.delete(id);
+
+                const allReq = historyStore.getAll();
+                allReq.onsuccess = () => {
+                    const remaining = (allReq.result || []).filter(item => item.roomId === roomId);
+                    const latest = remaining.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0] || null;
+
+                    if (!latest) {
+                        const roomReq = roomStore.get(roomId);
+                        roomReq.onsuccess = () => {
+                            const roomData = roomReq.result;
+                            if (!roomData) return;
+                            roomData.lastElec = 0;
+                            roomData.lastWater = 0;
+                            roomData.roomFee = 0;
+                            roomStore.put(roomData);
+                        };
+                    } else if (latest.id === deletedItem.id) {
+                        const roomReq = roomStore.get(roomId);
+                        roomReq.onsuccess = () => {
+                            const roomData = roomReq.result;
+                            if (!roomData) return;
+                            roomData.lastElec = latest.cElec;
+                            roomData.lastWater = latest.cWater;
+                            roomData.roomFee = latest.roomFee || 0;
+                            roomStore.put(roomData);
+                        };
+                    }
+                };
+            };
+
+            historyTx.oncomplete = () => {
                 loadRooms();
                 renderHistoryView();
                 showToast('ลบประวัติบิลแล้ว');
