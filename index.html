@@ -744,7 +744,8 @@
 
         function formatMoney(value) {
             const number = Number(value) || 0;
-            const text = number.toLocaleString(undefined, { minimumFractionDigits: 2 });
+            const absoluteValue = Math.abs(number);
+            const text = absoluteValue.toLocaleString(undefined, { minimumFractionDigits: 2 });
             return number < 0 ? `<span class="font-black text-emerald-600">${text}</span>` : text;
         }
 
